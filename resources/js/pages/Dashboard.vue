@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import ProductCard from '@/components/ProductCard.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { AppPageProps, type BreadcrumbItem, type Product } from '@/types';
 import { Head, InfiniteScroll, usePage } from '@inertiajs/vue3';

@@ -64,7 +64,9 @@ const addToCart = async (): Promise<void> => {
                             product.stock_quantity === 0,
                     }"
                 >
-                    {{ product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+                    {{
+                        product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'
+                    }}
                 </span>
             </div>
             <Button
@@ -78,4 +80,3 @@ const addToCart = async (): Promise<void> => {
         </CardContent>
     </Card>
 </template>
-
