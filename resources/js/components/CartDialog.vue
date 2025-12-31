@@ -82,8 +82,50 @@ const removeItem = async (productId: number): Promise<void> => {
     }
 };
 
-const buyNow = (): void => {
-    toast.success('Buy Now clicked');
+const buyNow = async (): Promise<void> => {
+    if (cartStore.itemCount === 0) {
+        toast.error('Cart is empty');
+        return;
+    }
+
+    if (isUpdating.value !== null) {
+        return;
+    }
+
+    isUpdating.value = -1; // Use -1 to indicate buy now operation
+    try {
+        const response = await fetch('/api/cart/buy-now', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({
+                message: 'Purchase failed',
+            }));
+            throw new Error(
+                error.message || `HTTP error! status: ${response.status}`,
+            );
+        }
+
+        // Clear cart store on success
+        cartStore.items = [];
+        toast.success('Purchase completed successfully!');
+        open.value = false;
+    } catch (error) {
+        console.error('Failed to complete purchase:', error);
+        const errorMessage =
+            error instanceof Error
+                ? error.message
+                : 'Failed to complete purchase';
+        toast.error(errorMessage);
+    } finally {
+        isUpdating.value = null;
+    }
 };
 </script>
 

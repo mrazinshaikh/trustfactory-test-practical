@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('/api/cart')->name('api.cart.')->group(function () {
         Route::put('/{product}', [CartController::class, 'update'])->name('update');
         Route::delete('/{product}', [CartController::class, 'destroy'])->name('destroy');
+        Route::post('/buy-now', [CartController::class, 'buyNow'])->name('buy-now');
     });
 });
 

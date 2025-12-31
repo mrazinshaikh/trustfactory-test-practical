@@ -17,8 +17,9 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->withoutTwoFactor()
             ->create([
-                'name'  => 'Test User',
-                'email' => 'test@example.com',
+                'name'     => 'Test User',
+                'email'    => 'test@example.com',
+                'is_admin' => true,
             ]);
 
         $this->call(ProductSeeder::class);

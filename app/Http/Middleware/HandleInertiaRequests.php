@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Cart;
 use Inertia\Middleware;
-use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Inspiring;
 
@@ -41,11 +41,18 @@ class HandleInertiaRequests extends Middleware
 
         $cart = [];
         if ($request->user()) {
-            $cart = CartItem::query()
-                ->with('product')
+            $pendingCart = Cart::query()
+                ->pending()
                 ->where('user_id', $request->user()->id)
-                ->get()
-                ->toArray();
+                ->latest()
+                ->first();
+
+            if ($pendingCart) {
+                $cart = $pendingCart->items()
+                    ->with('product')
+                    ->get()
+                    ->toArray();
+            }
         }
 
         return [

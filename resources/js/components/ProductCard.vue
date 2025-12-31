@@ -5,6 +5,7 @@ import { useCartStore } from '@/stores/cart';
 import { type Product } from '@/types';
 import { ShoppingCart } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps<{
     product: Product;
@@ -25,7 +26,23 @@ const buttonText = computed(() => {
 });
 
 const addToCart = async (): Promise<void> => {
-    if (props.product.stock_quantity === 0 || isAdding.value) {
+    if (props.product.stock_quantity === 0) {
+        toast.error('This product is out of stock');
+        return;
+    }
+
+    if (isAdding.value) {
+        return;
+    }
+
+    const cartItem = cartStore.getItemByProductId(props.product.id);
+    const currentQuantity = cartItem ? cartItem.quantity : 0;
+    const newQuantity = currentQuantity + 1;
+
+    if (props.product.stock_quantity < newQuantity) {
+        toast.error(
+            `Cannot add more items. Available stock: ${props.product.stock_quantity}, Already in cart: ${currentQuantity}`,
+        );
         return;
     }
 

@@ -74,18 +74,32 @@ export const useCartStore = defineStore('cart', () => {
         product: Product,
         quantity: number = 1,
     ): Promise<void> {
+        if (product.stock_quantity < quantity) {
+            toast.error(
+                `Insufficient stock. Available: ${product.stock_quantity}, Requested: ${quantity}`,
+            );
+            throw new Error('Insufficient stock');
+        }
+
         const existingItem = items.value.find(
             (item) => item.product_id === product.id,
         );
 
         if (existingItem) {
-            await updateQuantity(product.id, existingItem.quantity + quantity);
+            const newQuantity = existingItem.quantity + quantity;
+            if (product.stock_quantity < newQuantity) {
+                toast.error(
+                    `Insufficient stock. Available: ${product.stock_quantity}, Requested: ${newQuantity}`,
+                );
+                throw new Error('Insufficient stock');
+            }
+            await updateQuantity(product.id, newQuantity);
             return;
         }
 
         const tempItem: CartItem = {
             id: 0,
-            user_id: 0,
+            cart_id: 0,
             product_id: product.id,
             quantity,
             product,
