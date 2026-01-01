@@ -5,7 +5,6 @@ import { useCartStore } from '@/stores/cart';
 import { type Product } from '@/types';
 import { ShoppingCart } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { toast } from 'vue3-toastify';
 
 const props = defineProps<{
     product: Product;
@@ -26,23 +25,7 @@ const buttonText = computed(() => {
 });
 
 const addToCart = async (): Promise<void> => {
-    if (props.product.stock_quantity === 0) {
-        toast.error('This product is out of stock');
-        return;
-    }
-
     if (isAdding.value) {
-        return;
-    }
-
-    const cartItem = cartStore.getItemByProductId(props.product.id);
-    const currentQuantity = cartItem ? cartItem.quantity : 0;
-    const newQuantity = currentQuantity + 1;
-
-    if (props.product.stock_quantity < newQuantity) {
-        toast.error(
-            `Cannot add more items. Available stock: ${props.product.stock_quantity}, Already in cart: ${currentQuantity}`,
-        );
         return;
     }
 
@@ -72,19 +55,21 @@ const addToCart = async (): Promise<void> => {
         <CardContent class="mt-auto flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <span class="text-lg font-semibold">${{ product.price }}</span>
-                <span
-                    class="text-sm text-muted-foreground"
-                    :class="{
-                        'text-green-600 dark:text-green-400':
-                            product.stock_quantity > 0,
-                        'text-red-600 dark:text-red-400':
-                            product.stock_quantity === 0,
-                    }"
-                >
-                    {{
-                        product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'
-                    }}
-                </span>
+                <div class="text-sm text-muted-foreground">
+                    <span
+                        v-if="product.stock_quantity === 0"
+                        class="text-red-600 dark:text-red-400"
+                        >Out of Stock</span
+                    >
+                    <span
+                        v-else-if="product.stock_quantity > 10"
+                        class="text-green-600 dark:text-green-400"
+                        >In Stock</span
+                    >
+                    <span v-else class="text-orange-600 dark:text-orange-400"
+                        >Only {{ product.stock_quantity }} left</span
+                    >
+                </div>
             </div>
             <Button
                 :disabled="product.stock_quantity === 0 || isAdding"

@@ -10,7 +10,7 @@ class DashboardController extends Controller
     public function dashboard()
     {
         return Inertia::render('Dashboard', [
-            'products' => Inertia::scroll(fn () => Product::latest()->paginate(9)),
+            'products' => Inertia::scroll(fn () => Product::paginate(9)),
         ]);
     }
 }

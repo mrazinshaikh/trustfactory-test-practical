@@ -101,11 +101,19 @@
             </div>
         </div>
 
-        <div class="message">
-            <p>
-                A detailed CSV report with all product sales for this day is attached to this email.
-            </p>
-        </div>
+        @if(empty($salesData))
+            <div class="message" style="background-color: #fef3c7; border-left-color: #f59e0b;">
+                <p style="margin: 0; color: #92400e; font-weight: 500;">
+                    No sales were recorded today.
+                </p>
+            </div>
+        @else
+            <div class="message">
+                <p>
+                    A detailed CSV report with all product sales for this day is attached to this email.
+                </p>
+            </div>
+        @endif
 
         <div class="footer">
             <p>This is an automated daily sales report from your e-commerce system.</p>

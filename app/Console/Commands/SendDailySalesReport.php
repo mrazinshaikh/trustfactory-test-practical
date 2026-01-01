@@ -41,41 +41,35 @@ class SendDailySalesReport extends Command
             ->with(['items.product'])
             ->get();
 
-        if ($completedCarts->isEmpty()) {
-            $this->info('No sales found for today. Skipping report.');
-
-            return Command::SUCCESS;
-        }
-
         $salesData      = [];
         $totalItemsSold = 0;
         $totalRevenue   = 0;
         $totalOrders    = $completedCarts->count();
 
-        foreach ($completedCarts as $cart) {
-            foreach ($cart->items as $item) {
-                $productId = $item->product_id;
-                $product   = $item->product;
+        if (! $completedCarts->isEmpty()) {
+            foreach ($completedCarts as $cart) {
+                foreach ($cart->items as $item) {
+                    $productId = $item->product_id;
+                    $product   = $item->product;
 
-                if (! isset($salesData[$productId])) {
-                    $salesData[$productId] = [
-                        'product_name'  => $product->name,
-                        'quantity_sold' => 0,
-                        'unit_price'    => $product->price,
-                        'total_revenue' => 0,
-                    ];
+                    if (! isset($salesData[$productId])) {
+                        $salesData[$productId] = [
+                            'product_name'  => $product->name,
+                            'quantity_sold' => 0,
+                            'unit_price'    => $product->price,
+                            'total_revenue' => 0,
+                        ];
+                    }
+
+                    $salesData[$productId]['quantity_sold'] += $item->quantity;
+                    $itemRevenue = $item->quantity * $product->price;
+                    $salesData[$productId]['total_revenue'] += $itemRevenue;
+
+                    $totalItemsSold += $item->quantity;
+                    $totalRevenue   += $itemRevenue;
                 }
-
-                $salesData[$productId]['quantity_sold'] += $item->quantity;
-                $itemRevenue = $item->quantity * $product->price;
-                $salesData[$productId]['total_revenue'] += $itemRevenue;
-
-                $totalItemsSold += $item->quantity;
-                $totalRevenue   += $itemRevenue;
             }
         }
-
-        $csvPath = $this->generateCsv($salesData, $reportDate);
 
         $summary = [
             'total_orders'     => $totalOrders,
@@ -83,11 +77,16 @@ class SendDailySalesReport extends Command
             'total_revenue'    => $totalRevenue,
         ];
 
+        // Generate CSV only when there are sales
+        $csvPath = ! empty($salesData) ? $this->generateCsv($salesData, $reportDate) : null;
+
         $admin = User::where('is_admin', true)->first();
 
         if (! $admin) {
             $this->error('No admin user found. Cannot send report.');
-            File::delete($csvPath);
+            if ($csvPath) {
+                File::delete($csvPath);
+            }
 
             return Command::FAILURE;
         }
@@ -100,15 +99,22 @@ class SendDailySalesReport extends Command
                 $reportDate,
             ));
 
-            $this->info('Daily sales report sent successfully!');
+            $message = empty($salesData)
+                ? 'Daily sales report sent successfully (no sales today).'
+                : 'Daily sales report sent successfully!';
+            $this->info($message);
         } catch (\Exception $e) {
             $this->error("Failed to send report: {$e->getMessage()}");
-            File::delete($csvPath);
+            if ($csvPath) {
+                File::delete($csvPath);
+            }
 
             return Command::FAILURE;
         }
 
-        File::delete($csvPath);
+        if ($csvPath) {
+            File::delete($csvPath);
+        }
 
         return Command::SUCCESS;
     }

@@ -17,7 +17,7 @@ class DailySalesReportNotification extends Notification
     public function __construct(
         public array $salesData,
         public array $summary,
-        public string $csvPath,
+        public ?string $csvPath,
         public Carbon $reportDate,
     ) {
         //

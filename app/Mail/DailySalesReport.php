@@ -20,7 +20,7 @@ class DailySalesReport extends Mailable
     public function __construct(
         public array $salesData,
         public array $summary,
-        public string $csvPath,
+        public ?string $csvPath,
         public Carbon $reportDate,
     ) {
         //
@@ -53,6 +53,10 @@ class DailySalesReport extends Mailable
      */
     public function attachments(): array
     {
+        if (! $this->csvPath) {
+            return [];
+        }
+
         return [
             Attachment::fromPath($this->csvPath)
                 ->as("daily-sales-report-{$this->reportDate->format('Y-m-d')}.csv")
