@@ -60,7 +60,7 @@ php artisan key:generate
 ### 6. Run Database Migrations
 
 ```bash
-php artisan migrate --seed -q
+php artisan migrate --seed -n --force
 ```
 
 This will create:
