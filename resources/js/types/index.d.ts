@@ -24,6 +24,7 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    cart: CartItem[];
 };
 
 export interface User {
@@ -32,6 +33,34 @@ export interface User {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Product {
+    id: number;
+    name: string;
+    image: string;
+    price: number;
+    stock_quantity: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Cart {
+    id: number;
+    user_id: number;
+    status: 'Pending' | 'Completed';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CartItem {
+    id: number;
+    cart_id: number;
+    product_id: number;
+    quantity: number;
+    product: Product;
     created_at: string;
     updated_at: string;
 }

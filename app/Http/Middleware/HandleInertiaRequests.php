@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Cart;
 use Inertia\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Inspiring;
@@ -38,6 +39,22 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $cart = [];
+        if ($request->user()) {
+            $pendingCart = Cart::query()
+                ->pending()
+                ->where('user_id', $request->user()->id)
+                ->latest()
+                ->first();
+
+            if ($pendingCart) {
+                $cart = $pendingCart->items()
+                    ->with('product')
+                    ->get()
+                    ->toArray();
+            }
+        }
+
         return [
             ...parent::share($request),
             'name'  => config('app.name'),
@@ -46,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'cart'        => $cart,
         ];
     }
 }
